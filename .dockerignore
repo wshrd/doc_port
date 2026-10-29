@@ -1,0 +1,6 @@
+.git
+.env
+*.md
+.DS_Store
+agent-transcripts
+.cursor

@@ -1,0 +1,66 @@
+services:
+  proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
+      BUILD: 0
+      COMMIT: 0
+      CONFIGS: 0
+      DISTRIBUTION: 0
+      EXEC: 0
+      IMAGES: 0
+      INFO: 0
+      NETWORKS: 0
+      NODES: 0
+      PLUGINS: 0
+      SERVICES: 0
+      SESSION: 0
+      SWARM: 0
+      SYSTEM: 0
+      TASKS: 0
+      VOLUMES: 0
+      AUTH: 0
+      SECRETS: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal
+    labels:
+      com.docport.system: "true"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /run
+      - /var/lib/haproxy
+      - /tmp
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - proxy
+    ports:
+      # host:container — меняй левую сторону под сервер
+      - "6969:80"
+    environment:
+      DOCKER_HOST: tcp://proxy:2375
+      LISTEN_ADDR: ":80"
+    networks:
+      - internal
+    labels:
+      com.docport.system: "true"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+networks:
+  internal:
+    driver: bridge
+    internal: false

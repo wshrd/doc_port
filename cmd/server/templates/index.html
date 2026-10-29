@@ -1,0 +1,34 @@
+{{define "index.html"}}<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DocPort</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <span class="logo">DocPort</span>
+      </div>
+      <div class="controls">
+        <label class="search-wrap">
+          <span class="sr-only" data-i18n="search">Search</span>
+          <input id="search" type="search" placeholder="Filter stacks…" data-i18n-placeholder="search_placeholder" autocomplete="off">
+        </label>
+        <button type="button" id="lang-toggle" class="btn" aria-label="Language">EN</button>
+        <button type="button" id="theme-toggle" class="btn" data-i18n="theme" aria-label="Theme">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="cards-root">
+      {{template "cards.html" .}}
+    </div>
+  </main>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>{{end}}

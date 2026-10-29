@@ -1,0 +1,102 @@
+{{define "cards.html"}}
+{{if .Overview.Error}}
+<section class="banner error" role="alert">
+  <strong data-i18n="error">Error</strong>
+  <span>{{.Overview.Error}}</span>
+</section>
+{{end}}
+
+<section class="section" data-section="compose">
+  <div class="section-head">
+    <h2 data-i18n="compose">Compose stacks</h2>
+    <span class="count">{{len .Overview.Compose}}</span>
+  </div>
+  {{if .Overview.Compose}}
+  <div class="grid">
+    {{range .Overview.Compose}}
+    {{template "stack-card" (withStack . $.Now $.HostHint)}}
+    {{end}}
+  </div>
+  {{else}}
+  <p class="empty" data-i18n="empty_compose">No compose stacks found.</p>
+  {{end}}
+</section>
+
+<section class="section" data-section="standalone">
+  <div class="section-head">
+    <h2 data-i18n="standalone">Standalone</h2>
+    <span class="count">{{len .Overview.Standalone}}</span>
+  </div>
+  {{if .Overview.Standalone}}
+  <div class="grid">
+    {{range .Overview.Standalone}}
+    {{template "stack-card" (withStack . $.Now $.HostHint)}}
+    {{end}}
+  </div>
+  {{else}}
+  <p class="empty" data-i18n="empty_standalone">No standalone containers.</p>
+  {{end}}
+</section>
+{{end}}
+
+{{define "stack-card"}}
+<article class="card {{if .Stack.Active}}is-active{{else}}is-idle{{end}}" data-stack="{{.Stack.Name}}" data-kind="{{.Stack.Kind}}" data-active="{{.Stack.Active}}">
+  <header class="card-head">
+    <h3 class="card-title" title="{{.Stack.Name}}">{{.Stack.Name}}</h3>
+    <p class="card-meta">
+      <span class="pill kind">{{.Stack.Kind}}</span>
+      <span class="pill {{if .Stack.Active}}ok{{else}}idle{{end}}">
+        {{.Stack.Running}}/{{.Stack.Total}}
+        <span data-i18n="running">running</span>
+      </span>
+    </p>
+  </header>
+
+  <ul class="containers">
+    {{range $i, $c := .Stack.Containers}}
+    <li class="container {{if $c.Running}}up{{else}}down{{end}}{{if ge $i 3}} is-extra{{end}}">
+      <div class="c-top">
+        <div class="c-name-row">
+          <span class="c-name" title="{{$c.Name}}">{{if $c.Service}}{{$c.Service}}{{else}}{{$c.Name}}{{end}}</span>
+        </div>
+        <div class="c-status" title="{{$c.Status}}">
+          <span class="state state-{{$c.State}}">{{$c.State}}</span>
+          {{if and $c.Running $c.Uptime}}
+          <span class="uptime"><span data-i18n="up">up</span> {{$c.Uptime}}</span>
+          {{else if $c.Uptime}}
+          <span class="uptime">{{$c.Uptime}} <span data-i18n="ago">ago</span></span>
+          {{end}}
+        </div>
+      </div>
+      <div class="c-sub">
+        <span class="image" title="{{$c.ImageFull}}">{{$c.Image}}</span>
+        <span class="created" title="{{fmtTime $c.Created}}"><span data-i18n="created">created</span> {{age $c.Created $.Now}} <span data-i18n="ago">ago</span></span>
+        {{if $c.Health}}<span class="health health-{{$c.Health}}">{{$c.Health}}</span>{{end}}
+      </div>
+      {{if $c.Ports}}
+      <div class="ports">
+        {{range $c.Ports}}
+        {{$p := .}}
+        {{$scheme := portScheme $p.HostPort $p.Protocol}}
+        <div class="port-row">
+          <code class="port">{{if and (ne $p.HostIP "") (ne $p.HostIP "0.0.0.0")}}{{$p.HostIP}}:{{end}}{{$p.HostPort}}->{{$p.ContainerPort}}/{{$p.Protocol}}</code>
+          {{if $scheme}}
+          <a class="link primary" href="{{$scheme}}://{{$.HostHint}}:{{$p.HostPort}}" target="_blank" rel="noopener noreferrer">{{$scheme}}</a>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+      {{else}}
+      <p class="no-ports" data-i18n="no_ports">No published ports</p>
+      {{end}}
+    </li>
+    {{end}}
+  </ul>
+  {{if gt (len .Stack.Containers) 3}}
+  <button type="button" class="more-btn" data-extra="{{sub (len .Stack.Containers) 3}}">
+    <span class="when-collapsed"><span data-i18n="show_more">Show</span> {{sub (len .Stack.Containers) 3}} <span data-i18n="more">more</span></span>
+    <span class="when-expanded" data-i18n="show_less">Show less</span>
+  </button>
+  {{end}}
+</article>
+{{end}}
